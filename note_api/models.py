@@ -8,6 +8,12 @@ class Note(db.Model):
     content = db.Column(db.Text, nullable=False)
 
     def to_dict(self):
+        """Convert Note model  to serialized dictionarty
+
+        Returns:
+            serialized_model (dict) : A dictionary containing the note's `id`,
+                `title`, and `content`.
+        """
         return {
             "id": self.id,
             "title": self.title,
