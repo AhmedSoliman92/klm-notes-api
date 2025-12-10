@@ -21,3 +21,15 @@ def create_note():
     db.session.add(new_note)
     db.session.commit()
     return jsonify({"message": "Note created successfully"}), 201
+
+
+@app.route("/notes", methods=["GET"])
+def get_notes():
+    """Fetch all notes.
+
+    Returns:
+        Response: Flask reponse  with success message and 200 code.
+    """
+    notes = Note.query.all()
+    return jsonify([note.to_dict() for note in notes]), 200
+

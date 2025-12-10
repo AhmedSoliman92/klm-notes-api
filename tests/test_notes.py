@@ -1,4 +1,5 @@
 from note_api import db
+from note_api.models import Note
 
 
 def test_config(app):
@@ -9,6 +10,18 @@ def test_config(app):
     """
     assert app.testing
     assert app.config["SQLALCHEMY_DATABASE_URI"] == "sqlite:///:memory:"
+
+
+def test_get_notes_empty(client):
+    """Test retrieving notes when the database is empty.
+
+    Args:
+        client (FlaskClient): To test http request.
+    """
+
+    response = client.get("/notes")
+    assert response.status_code == 200
+    assert response.get_json() == []
 
 
 def test_create_note_success(client):
@@ -36,3 +49,25 @@ def test_create_note_invalid_data(client):
     )
     assert response.status_code == 400
     assert "Invalid request" in response.get_data(as_text=True)
+
+
+def test_get_notes_with_data(client, app):
+    """Test retrieving notes after one has been created directly via the DB.
+
+    Args:
+        app (Flask): flask app instance for testing.
+        client (FlaskClient): To test http request.
+    """
+
+    with app.app_context():
+        db.session.add(Note(title="In-DB Test", content="Data Check"))
+        db.session.commit()
+
+    response = client.get("/notes")
+    assert response.status_code == 200
+    data = response.get_json()
+
+    # Check the returned list size and content
+    assert len(data) == 2
+    assert data[1]["title"] == "In-DB Test"
+    assert "id" in data[1]
