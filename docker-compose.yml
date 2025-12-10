@@ -1,0 +1,41 @@
+services:
+  flask-app:
+    build: .
+    ports:
+      - "5100:5000"
+    environment:
+      - DB_URL=postgresql://postgres:postgres@postgresql:5432/notes_db # secret for prod
+      - FLASK_APP=run.py
+      - FLASK_DEBUG=1
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    networks:
+      - notes_network
+    command: flask run --host=0.0.0.0 --port=5000
+  postgresql:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+    # secrets
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=notes_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - notes_network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+
+networks:
+  notes_network:
+    driver: bridge
