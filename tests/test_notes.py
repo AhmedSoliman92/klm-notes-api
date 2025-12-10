@@ -172,3 +172,42 @@ def test_update_note_invalid_request(client, app):
 
     assert response.status_code == 400
     assert data["error"] == "Invalid request"
+
+
+def test_delete_note_success(client, app):
+    """
+    Test deleting an existing note successfully.
+
+    Args:
+        client (FlaskClient): To test http request.
+        app (Flask): flask app instance for testing.
+    """
+    with app.app_context():
+        note = Note(title="Delete Me", content="To be deleted")
+        db.session.add(note)
+        db.session.commit()
+        note_id = note.id
+
+    response = client.delete(f"/notes/{note_id}")
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert data["message"] == "Note deleted successfully"
+
+    with app.app_context():
+        deleted_note = db.session.get(Note, note_id)
+        assert deleted_note is None
+
+
+def test_delete_note_not_found(client):
+    """
+    Test deleting a note that does not exist.
+
+    Args:
+        client (FlaskClient): To test http request.
+    """
+    response = client.delete("/notes/9999")
+    data = response.get_json()
+
+    assert response.status_code == 404
+    assert data["error"] == "Note not found"
