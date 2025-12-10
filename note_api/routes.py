@@ -50,3 +50,28 @@ def get_note(id):
     if not note:
         return jsonify({"error": "Note not found"}), 404
     return jsonify(note.to_dict()), 200
+
+
+@app.route("/notes/<int:id>", methods=["PUT"])
+def update_note(id):
+    """Update the title and/or content of an existing note.
+    Args:
+        id (int): _description_
+
+    Returns:
+        Response: Flask reponse  with note details and 200 code.
+        error message and 404 code in case is not exist or 400 code
+        if it's invalid.
+    """
+    note = db.session.get(Note, id)
+    if not note:
+        return jsonify({"error": "Note not found"}), 404
+    data = request.get_json()
+    if not data or ("title" not in data and "content" not in data):
+        return jsonify({"error": "Invalid request"}), 400
+    if data.get("title"):
+        note.title = data["title"]
+    if data.get("content"):
+        note.content = data["content"]
+    db.session.commit()
+    return jsonify({"message": "Note updated successfully"}), 200

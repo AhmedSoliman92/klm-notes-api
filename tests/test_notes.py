@@ -108,3 +108,67 @@ def test_get_note_not_found(client):
 
     assert response.status_code == 404
     assert data["error"] == "Note not found"
+
+
+def test_update_note_success(client, app):
+    """
+    Test updating an existing note successfully.
+
+    Args:
+        client (FlaskClient): To test http request.
+        app (Flask): flask app instance for testing.
+    """
+    with app.app_context():
+        note = Note(title="Original Title", content="Original Content")
+        db.session.add(note)
+        db.session.commit()
+        note_id = note.id
+
+    response = client.put(
+        f"/notes/{note_id}",
+        json={"title": "Updated Title", "content": "Updated Content"},
+    )
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert data["message"] == "Note updated successfully"
+
+    with app.app_context():
+        updated_note = db.session.get(Note, note_id)
+        assert updated_note.title == "Updated Title"
+        assert updated_note.content == "Updated Content"
+
+
+def test_update_note_not_found(client):
+    """
+    Test updating a note that does not exist.
+
+    Args:
+        client (FlaskClient): To test http request.
+    """
+    response = client.put("/notes/9999", json={"title": "New Title"})
+    data = response.get_json()
+
+    assert response.status_code == 404
+    assert data["error"] == "Note not found"
+
+
+def test_update_note_invalid_request(client, app):
+    """
+    Test updating a note with invalid request payload.
+
+    Args:
+        client (FlaskClient): To test http request.
+        app (Flask): flask app instance for testing.
+    """
+    with app.app_context():
+        note = Note(title="Title", content="Content")
+        db.session.add(note)
+        db.session.commit()
+        note_id = note.id
+
+    response = client.put(f"/notes/{note_id}", json={})
+    data = response.get_json()
+
+    assert response.status_code == 400
+    assert data["error"] == "Invalid request"
