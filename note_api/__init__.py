@@ -29,6 +29,8 @@ def create_app(config_object="config.DevelopmentConfig"):
     db.init_app(app)
 
     with app.app_context():
+        from . import routes  # noqa: F401
+
         retries = 5
         while retries > 0:
             try:
