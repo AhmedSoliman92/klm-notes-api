@@ -33,3 +33,20 @@ def get_notes():
     notes = Note.query.all()
     return jsonify([note.to_dict() for note in notes]), 200
 
+
+@app.route("/notes/<int:id>", methods=["GET"])
+def get_note(id):
+    """Retrieve single note by note id
+
+    Args:
+        id (int): id of note
+
+    Returns:
+        Response: Flask reponse  with note details and 200 code.
+        error message and 404 code in case is not exist.
+    """
+    note = db.session.get(Note, id)
+    print(note)
+    if not note:
+        return jsonify({"error": "Note not found"}), 404
+    return jsonify(note.to_dict()), 200

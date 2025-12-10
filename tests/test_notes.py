@@ -71,3 +71,40 @@ def test_get_notes_with_data(client, app):
     assert len(data) == 2
     assert data[1]["title"] == "In-DB Test"
     assert "id" in data[1]
+
+
+def test_get_note_success(client, app):
+    """
+    Test retrieving an existing note by id.
+
+    Args:
+        client (FlaskClient): To test http request.
+        app (Flask): flask app instance for testing.
+    """
+    with app.app_context():
+        note = Note(title="Test Note", content="Test Content")
+        db.session.add(note)
+        db.session.commit()
+        note_id = note.id
+
+    response = client.get(f"/notes/{note_id}")
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert data["id"] == note_id
+    assert data["title"] == "Test Note"
+    assert data["content"] == "Test Content"
+
+
+def test_get_note_not_found(client):
+    """
+    Test retrieving a note that does not exist.
+
+    Args:
+        client (FlaskClient): To test http request.
+    """
+    response = client.get("/notes/9999")
+    data = response.get_json()
+
+    assert response.status_code == 404
+    assert data["error"] == "Note not found"
