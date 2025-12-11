@@ -114,3 +114,68 @@ python -m pytest -q
 Note
 
 - If your system requires `python3` rather than `python`, replace `python` / `pip` accordingly (e.g., `python3`, `pip3`).
+
+<br>
+<br>
+
+# Continuous Integration / Continuous Deployment (CI/CD)
+```
+
+Workflow name: "CI/CD Pipeline"
+Task: automatically lint, test, and build the Docker image for klm-note-api.
+
+The pipeline is triggered automatically under the following conditions:
+* On every push to the main branch.
+* On every pull_request targeting the main branch.
+```
+
+### Configuration: Setting Up GitHub Secrets
+
+```
+To add these secrets:
+
+1. Navigate to Settings: In GitHub repository, click the "Settings" tab.
+2. Go to Secrets: In the left sidebar, navigate to "Security" -> "Secrets and variables" -> "Actions".
+3. Add New Repository Secret: Click the "New repository secret" button and enter the following names and corresponding values:
+
+Secret Name: DOCKER_USERNAME
+Purpose: Your Docker Hub username.
+
+Secret Name: DOCKER_PAT
+Purpose: Your Docker Hub Personal Access Token (PAT) used for logging in and pushing images.
+
+Secret Name: DB_PASSWORD
+Purpose: The password used to reset the PostgreSQL user's password during the tests job.
+
+Secret Name: DB_URL
+Purpose: The full connection string used to connect to the test PostgreSQL database.
+```
+### You can manually trigger the full pipeline.
+```
+
+1. Navigate to Actions: Go to the "Actions" tab in GitHub repository.
+2. Select the Workflow: In the left sidebar, click on the "CI/CD Pipeline" workflow.
+3. Run Workflow: On the main workflow page, click the "Run workflow" dropdown button located on the right side.
+4. Click the green "Run workflow" button.
+
+```
+
+### Workflow Stages
+```
+
+The pipeline is broken down into sequential jobs to ensure code quality and stability before building:
+
+Job: lint
+Dependency: None
+Purpose: Checks code against established standards.
+
+
+Job Name: tests
+Dependency: lint
+Purpose: Executes unit/integration tests after setting up the PostgreSQL database instance.
+
+
+Job Name: build
+Dependency: lint, tests
+Purpose: Builds a multi-platform Docker image, tags it with version metadata, and pushes it to Docker Hub.
+```
