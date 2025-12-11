@@ -179,3 +179,63 @@ Job Name: build
 Dependency: lint, tests
 Purpose: Builds a multi-platform Docker image, tags it with version metadata, and pushes it to Docker Hub.
 ```
+
+### Github Actions for CICD
+
+```
+Since I am using github repository, then I will get many benifet from using github action, as following:
+1. Native Integration: Seamless with github repo.
+2. Cost: free for public repo.
+3. Ecosystem: Rich marketplace of pre-built actions.
+4. Security: Built-in secrets management.
+
+```
+# Cloud Infra Design
+
+
+### Cloud Infrastructure Design
+
+![Cloud Infrastructure Design](./Cloud_Infra_Design.png)
+
+```
+I chose Cloud Run over GKE or Compute engine for many reason:
+Serviceless
+Perfect for API Workloads
+Cost Efficient
+GKE will be more complex and higher cost for this simple API. While Compute engine need manual scaling and that's the strength of Cloud RUn.
+```
+### Identity and Access Management (IAM)
+
+```
+IAM Roles will be granted to Service Acount to be able to interact with other GCP services:
+1. Grant Accessor Role to authorize Flask app to read secrets which is stored in Secret Manager.
+2. Cloud SQL Client Role to to authorize Service Account to connect to the managed Postgresql database instance.
+
+
+Also other authorization is needed for github actions:
+1. Artifact Registry Writer to authorize cicd pipeline to push Docker image to the registry.
+2. Cloud Run Developer to authorize the cicd pipeline to deploy the new image version to this Cloud Run.
+
+
+```
+### Secret management
+
+```
+Google Secret Manager will be used as the centralized, highly-available secret storage for sensitive application configuration such as DB_URL. This ensures credentials are never committed to code, stored in environment variables, or baked into the Docker image.
+```
+### Network
+
+```
+1. Cloud Load Balancer: Provides a global, stable, single IP address, handles HTTPS termination (SSL certificate management), and routes traffic to the Cloud Run service.
+It will be the public entry point.
+
+2. VPC Network: Cloud Run is a serverless product, the best practice for connecting it to a private database is via Serverless VPC Access. It links the Cloud Run env to  VPC, allowing it to communicate with Cloud SQL using its private IP address, rather than relying on a public IP for the database.
+
+```
+### WAF
+
+```
+One more Security layer can be added which is Cloud Armor
+for example we can set request limit per minute to 100 requests. If it's exceed, Too many request will be returned and IP will be blocked (let's say for 10 minutes).
+```
+
