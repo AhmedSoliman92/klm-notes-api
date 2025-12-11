@@ -39,7 +39,7 @@ runs:
       with:
         path: |
           ~/cache/pip
-          ~/.local/lib/python${{ inputs.python-version }}/sitee-packages
+          ~/.local/lib/python${{ inputs.python-version }}/site-packages
         key: ${{ runner.os }}-pip-${{ inputs.python-version }}-${{ hashFiles('**/requirements.txt') }}-${{ inputs.cache-key-suffix }}
         restore-keys:
           ${{ runner.os }}-pip-${{ inputs.python-version }}-${{ hashFiles('**/requirements.txt') }}
