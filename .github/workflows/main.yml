@@ -12,6 +12,7 @@ env:
   # REGISTRY: region-docker.pkg.dev/project-id ## in case of deploy to GCP Artifact
   REGISTRY: docker.io
   IMAGE_NAME: klm-note-api
+  DOCKER_USERNAME: ahmedsoli101
 jobs:
   lint:
     name: Linting and Code Quality
@@ -111,7 +112,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           # Artifact Registry path structure in case of DCP
-          images: ${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -132,7 +133,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           # WIF for authentication in case of GCP Artifact
-          username: ${{ secrets.DOCKER_USERNAME }}
+          username: ${{ env.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PAT }}
 
       - name: Build and Push Image
