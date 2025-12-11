@@ -1,0 +1,57 @@
+name: 'Setup Python Environment'
+description: 'Set python with its dependencies for note-api'
+
+inputs:
+  python-version:
+    description: 'Used Python'
+    required: true
+    default: '3.11.9'
+
+  cache-key-suffix:
+    description: 'Cache Key for different jobs.'
+    required: false
+    default: ''
+
+outputs:
+  python-path:
+    description: 'Path to Python'
+    value: ${{ steps.paths.outputs.python-path }}
+
+  cache-hit:
+    description: 'Whether pip cache was hit'
+    value: ${{ steps.cache-depnd.outputs.cache-hit }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Set Python ${{ inputs.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Get Python Path
+      id: paths
+      shell: bash
+      run: |
+        echo "python-path=$(which python3)" >> $GITHUB_OUTPUT
+
+    - name: Caching pip dependencies
+      id: cache-depnd
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/cache/pip
+          ~/.local/lib/python${{ inputs.python-version }}/sitee-packages
+        key: ${{ runner.os }}-pip-${{ inputs.python-version }}-${{ hashFiles('**/requirements.txt') }}-${{ inputs.cache-key-suffix }}
+        restore-keys:
+          ${{ runner.os }}-pip-${{ inputs.python-version }}-${{ hashFiles('**/requirements.txt') }}
+          ${{ runner.os }}-pip-${{ inputs.python-version }}-
+          ${{ runner.os }}-pip-
+
+    - name: Install Dependencies
+      shell: bash
+      run: |
+        if [ -f requirements.txt ]; then
+          echo "Installing from requirements.txt..."
+          pip3 install -r requirements.txt
+        else
+          echo "No requirements.txt found"
+        fi
