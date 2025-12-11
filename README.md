@@ -238,4 +238,11 @@ It will be the public entry point.
 One more Security layer can be added which is Cloud Armor
 for example we can set request limit per minute to 100 requests. If it's exceed, Too many request will be returned and IP will be blocked (let's say for 10 minutes).
 ```
+# Consideration
 
+This repository's instructions and config  are strictly for local development and testing. In case of cloud deployment, some of points must be considered:
+
+* `DB_URL` must be adapted to a secure connection string pointing to the Cloud SQL instance. It  must fetch securely from GCP Secret Manager, with access governed by IAM policies.
+* `Docker images` must be pushed to a private GCP Artifact Registry or other regional registry.
+Terraform and GCP Artifactory.
+* The entire GCP environment (VPC, Cloud Run service, Cloud SQL instance, IAM policies, etc.) is provisioned using `Terraform`. best practices to be located  in terraform/ dir.
